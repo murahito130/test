@@ -1,495 +1,862 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>むらひとの色々</title>
-    <!-- Tailwind CSSを読み込み -->
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Noto Sans JP と Inter を読み込み -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Material Icons を読み込み (アイコンは引き続き使用) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+                    },
+                    colors: {
+                        deep: '#0B0C10',
+                        slate: '#1F2833',
+                        highlight: '#66FCF1',
+                        accent: '#45A29E',
+                        light: '#C5C6C7'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* カスタムCSSとアニメーション */
         :root {
-            --bg-color-dark: #1a1a2e;
-            --text-color-light: #e0e0e0;
-            --accent-color-1: #e94560;
-            --accent-color-2: #0f3460;
-            --highlight-color: #533483;
-            --card-bg: #222831; /* カードの背景色 */
+            /* 黄金比ベースのサイジング (1:1.618) + スマホ最適化(clamp) */
+            --ratio: 1.618;
+            --space-xs: clamp(0.382rem, 1vw, 0.618rem);
+            --space-sm: clamp(0.618rem, 2vw, 1rem);
+            --space-md: clamp(1rem, 3vw, 1.618rem);
+            --space-lg: clamp(1.618rem, 5vw, 2.618rem);
+            --space-xl: clamp(2.618rem, 8vw, 4.236rem);
+            --space-xxl: clamp(4.236rem, 13vw, 6.854rem);
+
+            --bg-base: #0a0b10;
+            --bg-surface: rgba(25, 27, 34, 0.4);
+            --bg-surface-hover: rgba(45, 48, 60, 0.6);
+            --border-color: rgba(255, 255, 255, 0.08);
+
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a4b8;
+            --accent-glow: #7c4dff;
+            --accent-hot: #ff3366;
+
+            --bottom-nav-height: 65px;
         }
+
         body {
-            font-family: 'Inter', 'Noto Sans JP', sans-serif;
-            background: linear-gradient(45deg, var(--bg-color-dark) 0%, var(--accent-color-2) 100%);
-            background-size: 400% 400%;
-            animation: gradientAnimation 15s ease infinite;
-            color: var(--text-color-light);
-            line-height: 1.6;
-            scroll-behavior: smooth;
-            overflow-x: hidden; /* 横スクロール防止 */
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            line-height: var(--ratio);
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(124, 77, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(255, 51, 102, 0.05) 0%, transparent 50%);
+            background-attachment: fixed;
+            font-size: 16px;
+            /* モバイルボトムナビの分の余白 */
+            padding-bottom: var(--bottom-nav-height);
         }
-        @keyframes gradientAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+
+        @media (min-width: 1024px) {
+            body {
+                padding-bottom: 0;
+            }
         }
-        /* ナビゲーションバーのスタイル */
-        nav {
-            background-color: rgba(34, 40, 49, 0.9); /* 半透明のカード背景色 */
-            backdrop-filter: blur(8px); /* 背景をぼかす */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            transition: all 0.4s ease-in-out;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+        /* レイアウトグリッド (サイドバー幅を調整) */
+        .golden-grid {
+            display: grid;
+            min-height: 100vh;
+            max-width: 100%;
+            margin: 0 auto;
         }
-        nav ul li a {
-            padding: 1rem 1.5rem;
-            display: block;
-            color: var(--text-color-light);
-            font-weight: 500;
-            transition: all 0.3s ease-in-out;
+
+        @media (min-width: 1024px) {
+            .golden-grid {
+                /* ユーザビリティ優先：サイドバーは使いやすい固定幅にし、右側メインを画面幅いっぱいに使う */
+                grid-template-columns: 320px 1fr;
+                /* 大画面のフルHD等でも見やすい広々とした幅 */
+                max-width: 96%;
+            }
+        }
+
+        /* 左側：固定サイドバー (Glassmorphism) */
+        .sidebar {
+            padding: var(--space-xl) var(--space-lg) var(--space-sm);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                border-right: 1px solid var(--border-color);
+                position: sticky;
+                top: 0;
+                height: 100vh;
+                overflow-y: auto;
+                /* スクロールバー非表示 */
+                -ms-overflow-style: none;
+                /* IE, Edge */
+                scrollbar-width: none;
+                /* Firefox */
+                padding: var(--space-xl) var(--space-lg);
+            }
+
+            .sidebar::-webkit-scrollbar {
+                display: none;
+                /* Chrome, Safari */
+            }
+        }
+
+        /* 右側：コンテンツエリア */
+        .content-area {
+            padding: var(--space-md) var(--space-sm) calc(var(--space-xxl) + var(--bottom-nav-height));
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        @media (min-width: 1024px) {
+            .content-area {
+                /* PC版は画面幅を活かして見やすい余白を追加 */
+                padding: var(--space-xl) 5%;
+                /* 要素が広がりすぎるのを防ぎつつ、広々見せる */
+                gap: var(--space-xl);
+            }
+        }
+
+        /* グラスモーフィズムカード */
+        .glass-card {
+            background: var(--bg-surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--space-sm);
+            padding: var(--space-md);
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, background 0.4s ease;
             position: relative;
             overflow: hidden;
         }
-        nav ul li a::after {
+
+        .glass-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.06), transparent 40%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* モバイルではホバーエフェクトを無効化（パフォーマンスとタッチ誤爆防止） */
+        @media (min-width: 1024px) {
+            .glass-card:hover::before {
+                opacity: 1;
+            }
+
+            .glass-card:hover {
+                transform: translateY(-4px);
+                background: var(--bg-surface-hover);
+                box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+                border-color: rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        /* タイポグラフィ階層 (黄金比ベース) */
+        h1 {
+            font-size: calc(1rem * var(--ratio) * var(--ratio));
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: calc(1rem * var(--ratio));
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+            margin-top: var(--space-md);
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+        }
+
+        /* リッチなテキストエフェクト */
+        .gradient-text {
+            background: linear-gradient(135deg, #e0e0e0 0%, #7c4dff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ナビゲーションリンク (PC用) */
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: var(--space-xs) 0;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s ease, transform 0.3s ease;
+            width: fit-content;
+        }
+
+        .desktop-nav {
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            .desktop-nav {
+                display: flex;
+            }
+        }
+
+        .nav-link::before {
             content: '';
             position: absolute;
-            left: 50%;
-            bottom: 0;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
             width: 0;
-            height: 3px;
-            background-color: var(--accent-color-1);
-            transition: all 0.3s ease-in-out;
-            transform: translateX(-50%);
+            height: 2px;
+            background: var(--accent-glow);
+            transition: width 0.3s ease, left 0.3s ease;
         }
-        nav ul li a:hover::after {
-            width: 100%;
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-primary);
+            transform: translateX(20px);
         }
-        nav ul li a.active {
-            color: var(--accent-color-1);
+
+        .nav-link:hover::before,
+        .nav-link.active::before {
+            width: 12px;
+            left: -20px;
         }
-        nav ul li a.active::after {
-            width: 100%;
+
+        .nav-link .material-icons {
+            margin-right: 12px;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            transition: opacity 0.3s, color 0.3s;
         }
-        /* ボトムナビゲーションのスタイル */
+
+        .nav-link:hover .material-icons,
+        .nav-link.active .material-icons {
+            opacity: 1;
+            color: var(--accent-glow);
+        }
+
+        /* ボトムナビゲーション (モバイル用) */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
-            right: 0;
-            background-color: rgba(34, 40, 49, 0.9); /* 半透明のカード背景色 */
-            backdrop-filter: blur(8px);
-            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
+            width: 100%;
+            height: var(--bottom-nav-height);
+            background: rgba(10, 11, 16, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-around;
-            padding: 0.5rem 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
+            z-index: 50;
+            padding-bottom: env(safe-area-inset-bottom);
+            /* iPhone X等の下のバー対応 */
         }
-        .bottom-nav a {
-            flex: 1;
+
+        @media (min-width: 1024px) {
+            .bottom-nav {
+                display: none;
+            }
+        }
+
+        .bottom-nav-link {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: var(--text-color-light);
-            font-size: 0.75rem;
-            padding: 0.5rem 0;
-            transition: all 0.3s ease-in-out;
-            border-radius: 0.5rem;
-        }
-        .bottom-nav a .material-icons {
-            font-size: 1.5rem;
-            margin-bottom: 0.25rem;
-            transition: transform 0.3s ease-in-out;
-        }
-        .bottom-nav a:hover .material-icons {
-            transform: translateY(-3px);
-            color: var(--accent-color-1);
-        }
-        .bottom-nav a.active {
-            color: var(--accent-color-1);
-        }
-        /* セクションのスタイル (カード風) */
-        section {
-            background-color: var(--card-bg);
-            border-radius: 1rem;
-            padding: 2.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-            transform: translateY(50px) scale(0.95);
-            opacity: 0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        section.visible {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-        }
-        /* ボタンのスタイル */
-        .cool-button {
-            background: linear-gradient(90deg, var(--accent-color-1) 0%, var(--highlight-color) 100%);
-            color: white;
-            padding: 0.8rem 1.8rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.4s ease-in-out;
-            cursor: pointer;
-            border: none;
-            outline: none;
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-        .cool-button:hover {
-            background: linear-gradient(90deg, var(--highlight-color) 0%, var(--accent-color-1) 100%);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 20px var(--accent-color-1); /* グローエフェクト */
-            transform: translateY(-3px) scale(1.02);
-        }
-        .cool-button:active {
-            transform: translateY(0);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-        }
-        /* 波紋エフェクト (ボタンとリンクに適用) */
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.4);
-            animation: ripple-animation 0.6s linear forwards;
-            transform: scale(0);
-            pointer-events: none;
-        }
-        @keyframes ripple-animation {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
-        }
-        /* iframeのスタイルとアニメーション */
-        .responsive-iframe {
-            width: 100%;
-            height: 0;
-            overflow: hidden;
-            border: none;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: height 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-            opacity: 0;
-            margin-top: 1.5rem;
-            background-color: #ffffff; /* iframeの背景を白に */
-        }
-        .responsive-iframe.show {
-            height: 400px; /* 表示時の高さ */
-            opacity: 1;
-        }
-        /* SNSアイコンのスタイル */
-        .sns-icon {
-            width: 2.5rem;
-            height: 2.5rem;
-            margin-right: 0.75rem;
-            transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
-            border-radius: 0.5rem;
-            filter: grayscale(50%); /* デフォルトで少しモノクロ */
-        }
-        .sns-icon:hover {
-            transform: scale(1.15) rotate(5deg);
-            filter: grayscale(0%); /* ホバーでカラーに */
-        }
-        /* リンクのスタイル */
-        a {
-            color: var(--accent-color-1);
+            color: var(--text-secondary);
             text-decoration: none;
-            transition: color 0.3s ease-in-out;
+            flex: 1;
+            height: 100%;
+            transition: color 0.3s ease;
         }
-        a:hover {
-            color: var(--highlight-color);
-            text-decoration: underline;
+
+        .bottom-nav-link.active {
+            color: var(--accent-glow);
         }
-        /* レスポンシブデザイン */
-        @media (max-width: 768px) {
-            nav {
-                display: none;
+
+        .bottom-nav-link .material-icons {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+            transition: transform 0.3s ease;
+        }
+
+        .bottom-nav-link.active .material-icons {
+            transform: translateY(-2px);
+        }
+
+        .bottom-nav-link span {
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+
+        /* ボタン */
+        .premium-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-xs) var(--space-md);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border-radius: 2rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+            /* タッチターゲットを広げる */
+            min-height: 44px;
+        }
+
+        .premium-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .premium-button:hover {
+            background: rgba(124, 77, 255, 0.2);
+            border-color: rgba(124, 77, 255, 0.5);
+            box-shadow: 0 0 15px rgba(124, 77, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .premium-button:hover::after {
+            left: 200%;
+        }
+
+        /* iframe/コンテナ */
+        .iframe-container {
+            width: 100%;
+            border-radius: var(--space-sm);
+            overflow: hidden;
+            background: var(--bg-surface);
+            transition: height 0.6s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.6s ease;
+            height: 0;
+            opacity: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .iframe-container.show {
+            height: 60vh;
+            /* モバイル画面の6割程度の高さ */
+            min-height: 350px;
+            max-height: 500px;
+            opacity: 1;
+            margin-top: var(--space-sm);
+        }
+
+        @media (min-width: 1024px) {
+            .iframe-container.show {
+                height: 400px;
             }
-            .bottom-nav {
-                display: flex;
-            }
-            .container {
-                padding: 1rem;
-                margin-bottom: 5rem; /* ボトムナビの分スペースを確保 */
-            }
-            section {
-                padding: 1.5rem;
+
+            .iframe-container.show-schedule {
+                height: 600px !important;
             }
         }
-        @media (min-width: 769px) {
-            nav {
-                display: block;
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            /* ダークテーマ風に色を反転して馴染ませる */
+            filter: invert(90%) hue-rotate(180deg) brightness(1.1) contrast(0.95);
+            /* 背景に少し溶け込むように透過 */
+            opacity: 0.9;
+        }
+
+        /* リストアイテム */
+        .link-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: var(--space-sm);
+            border-radius: var(--space-xs);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        @media (min-width: 1024px) {
+            .link-item {
+                gap: 20px;
             }
-            .bottom-nav {
-                display: none;
+
+            .link-item:hover {
+                background: rgba(255, 255, 255, 0.08);
+                border-color: rgba(255, 255, 255, 0.1);
+                color: var(--text-primary);
+                transform: translateX(4px);
             }
-            .container {
-                max-width: 960px;
-                margin: 0 auto;
-                padding: 2rem 0;
+        }
+
+        .link-item .icon {
+            width: 32px;
+            height: 32px;
+            font-size: 20px;
+            flex-shrink: 0;
+            border-radius: 6px;
+        }
+
+        @media (min-width: 1024px) {
+            .link-item .icon {
+                width: 36px;
+                height: 36px;
+                font-size: 22px;
             }
+        }
+
+        .link-item img.icon {
+            filter: grayscale(100%) opacity(0.7);
+            transition: filter 0.3s ease;
+        }
+
+        .link-item:hover img.icon {
+            filter: grayscale(0%) opacity(1);
+        }
+
+        /* セクションフェードイン */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+            will-change: opacity, transform;
+        }
+
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: none;
         }
     </style>
 </head>
+
 <body>
-    <!-- トップナビゲーションバー -->
-    <nav class="hidden md:block">
-        <div class="container mx-auto flex justify-center py-4">
-            <ul class="flex space-x-6">
-                <li><a href="#introduction" class="nav-link active">自己紹介</a></li>
-                <li><a href="#madamisu" class="nav-link">マダミス・ストプレ・TRPG</a></li>
-                <li><a href="#schedule" class="nav-link">スケジュール</a></li>
-                <li><a href="#sns" class="nav-link">SNS</a></li>
-                <li><a href="#bots" class="nav-link">BOT</a></li>
-            </ul>
-        </div>
-    </nav>
-    <!-- ボトムナビゲーションバー (モバイル用) -->
-    <div class="bottom-nav md:hidden">
-        <a href="#introduction" class="bottom-nav-link active">
-            <i class="material-icons">person</i>
-            自己紹介
+
+    <div class="golden-grid">
+        <!-- 左側：固定サイドバー (38.2%) -->
+        <aside class="sidebar">
+            <div class="sticky top-0 pt-4 flex flex-col h-full">
+                <!-- プロフィール部分 -->
+                <div class="mb-8 lg:mb-12 fade-in-section">
+                    <h1 class="gradient-text mb-4">むらひとの色々</h1>
+                    <p class="text-lg leading-relaxed">日々プログラムを書くSE。</p>
+                    <p class="text-sm leading-relaxed mt-2 opacity-80">
+                        マーダーミステリー・ストーリープレイング・TRPG・スプラトゥーンで主に遊んでいます。
+                    </p>
+                </div>
+
+                <!-- ナビゲーション（PC用） -->
+                <nav class="desktop-nav flex-col gap-4 flex-1 fade-in-section hover-effect-sync"
+                    style="transition-delay: 0.1s;">
+                    <a href="#about" class="nav-link active">
+                        <span class="material-icons">person_outline</span>
+                        About
+                    </a>
+                    <a href="#madamisu" class="nav-link">
+                        <span class="material-icons">casino</span>
+                        シナリオ
+                    </a>
+                    <a href="#schedule" class="nav-link">
+                        <span class="material-icons">calendar_today</span>
+                        スケジュール
+                    </a>
+                    <a href="#sns" class="nav-link">
+                        <span class="material-icons">share</span>
+                        SNSリンク
+                    </a>
+                    <a href="#bots" class="nav-link">
+                        <span class="material-icons">smart_toy</span>
+                        制作物
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- 右側：スクロールコンテンツ (61.8%) -->
+        <main class="content-area">
+
+            <!-- About Section (Intro is mostly in sidebar, but keeping anchor) -->
+            <section id="about" class="glass-card fade-in-section lg:hidden">
+                <!-- モバイル用自己紹介 -->
+                <h2>自己紹介</h2>
+                <p>日々プログラムを書くSE♂。</p>
+                <p>最近は、マーダーミステリー・ストーリープレイング・TRPG・スプラトゥーンで主に遊んでいる。</p>
+            </section>
+
+            <!-- マダミス・ストプレ・TRPG -->
+            <section id="madamisu" class="glass-card fade-in-section">
+                <h2>マダミス・ストプレ・TRPG</h2>
+
+                <div class="mb-8">
+                    <h3>通過済み・予定のシナリオ</h3>
+                    <p class="text-sm mb-4">これまで遊んだ、または遊ぶ予定のシナリオリストです。</p>
+                    <button id="btn-passed" class="premium-button">
+                        <span class="material-icons mr-2 text-sm">visibility</span>
+                        <span>リストを表示</span>
+                    </button>
+                    <div id="iframe-passed" class="iframe-container">
+                        <iframe
+                            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKeyDIJNmixBw3sXOHaNkdYRYRnQWJS7SYrGIa8JUgiFTi8Qw1f6zU-NWGJz17sjbNZu26bn6r6BNj/pubhtml?widget=true&amp;headers=false"
+                            loading="lazy"></iframe>
+                    </div>
+                </div>
+
+                <div>
+                    <h3>GM可能なシナリオ</h3>
+                    <p class="text-sm mb-4">私がゲームマスター(GM)を担当できるシナリオリストです。</p>
+                    <button id="btn-gm" class="premium-button">
+                        <span class="material-icons mr-2 text-sm">visibility</span>
+                        <span>リストを表示</span>
+                    </button>
+                    <div id="iframe-gm" class="iframe-container">
+                        <iframe
+                            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTfwTKFVBioZ7ipaD6x8tT_ANSpvpDLQJ0QXBlI6tHyVNPikyOAG-3jg_nIcFAetYQAI0FIabX2E0Yl/pubhtml?widget=true&amp;headers=false"
+                            loading="lazy"></iframe>
+                    </div>
+                </div>
+            </section>
+
+            <!-- スケジュール -->
+            <section id="schedule" class="glass-card fade-in-section">
+                <h2>スケジュール</h2>
+                <p class="text-sm mb-4">TRPGやゲームの空き状況をご確認いただけます。</p>
+                <button id="btn-schedule" class="premium-button">
+                    <span class="material-icons mr-2 text-sm">visibility_off</span>
+                    <span>カレンダーを非表示</span>
+                </button>
+                <div id="iframe-schedule" class="iframe-container show show-schedule">
+                    <iframe
+                        src="https://calendar.google.com/calendar/embed?wkst=1&ctz=Asia%2FTokyo&showPrint=0&showTitle=0&src=ZG9yaW4uYS5tb29uLjgxMkBnbWFpbC5jb20&src=NTI2NWU0ZWMwNTZlMGJkNWVkZGE3NTYzODllMjliNWUyOWNkYjk2MjU2Yzk3ZmIzMzQ3YjI2YmNiMmRjOWU2N0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=NDA4NTAwODVkNzk1MGY0ZjE3NGI0ZmE1ZjQwYmM1NjY5Y2RmY2NmNTcyZTI5NjZmMjBiZDNhYjg4OGMzYTk2ZkBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y2YwNDI1ZWUzNjZjZWZiMzI0MDlhM2UwYTIwMDY1NGRmMjA1MjgyNmQzNThjMDIxODllNDc1MThlNzE0MWQ5M0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=amEuamFwYW5lc2UjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%234285F4&color=%23D81B60&color=%23EF6C00&color=%233F51B5&color=%23009688"
+                        style="border-width:0" frameborder="0" scrolling="no" loading="lazy"></iframe>
+                </div>
+            </section>
+
+            <!-- SNS等 -->
+            <section id="sns" class="glass-card fade-in-section">
+                <h2>SNS & リンク</h2>
+                <div class="link-list mt-6">
+                    <a href="https://x.com/murahito130" target="_blank" rel="noopener noreferrer" class="link-item">
+                        <img class="icon"
+                            src="https://about.x.com/content/dam/about-twitter/x/brand-toolkit/logo-black.png" alt="X"
+                            onerror="this.onerror=null;this.src='https://placehold.co/40x40/1a1a1a/ffffff?text=X';" />
+                        <div>
+                            <div class="font-medium text-gray-200">X (旧Twitter)</div>
+                            <div class="text-xs mt-1">@murahito130</div>
+                        </div>
+                        <span class="material-icons ml-auto text-sm opacity-50">open_in_new</span>
+                    </a>
+
+                    <a href="https://github.com/murahito130" target="_blank" rel="noopener noreferrer"
+                        class="link-item">
+                        <img class="icon" src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+                            alt="GitHub"
+                            onerror="this.onerror=null;this.src='https://placehold.co/40x40/1a1a1a/ffffff?text=GH';" />
+                        <div>
+                            <div class="font-medium text-gray-200">GitHub</div>
+                            <div class="text-xs mt-1">プログラミングや開発プロジェクト</div>
+                        </div>
+                        <span class="material-icons ml-auto text-sm opacity-50">open_in_new</span>
+                    </a>
+
+                    <a href="https://lounge.nintendo.com/friendcode/0645-0135-9421/C7V6SDr8Vp" target="_blank"
+                        rel="noopener noreferrer" class="link-item">
+                        <img class="icon"
+                            src="https://www.nintendo.com/jp/hardware/switch/img/10-mv/logo-with-shadow.png"
+                            alt="Switch"
+                            onerror="this.onerror=null;this.src='https://placehold.co/40x40/1a1a1a/ffffff?text=SW';" />
+                        <div>
+                            <div class="font-medium text-gray-200">Nintendo Switch</div>
+                            <div class="text-xs mt-1">フレンドコード SW-0645-0135-9421</div>
+                        </div>
+                        <span class="material-icons ml-auto text-sm opacity-50">open_in_new</span>
+                    </a>
+
+                    <a href="http://www.youtube.com/@murahito130" target="_blank" rel="noopener noreferrer"
+                        class="link-item">
+                        <span
+                            class="material-icons icon flex items-center justify-center bg-red-600 text-white rounded">play_arrow</span>
+                        <div>
+                            <div class="font-medium text-gray-200">YouTube</div>
+                            <div class="text-xs mt-1">@murahito130</div>
+                        </div>
+                        <span class="material-icons ml-auto text-sm opacity-50">open_in_new</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 制作物 -->
+            <section id="bots" class="glass-card fade-in-section">
+                <h2>公開しているBOTやアプリ</h2>
+                <div class="link-list mt-6">
+                    <a href="https://qiita.com/murahito/items/127da46d03a510f98bca" target="_blank"
+                        rel="noopener noreferrer" class="link-item">
+                        <span
+                            class="material-icons icon flex items-center justify-center bg-green-800 text-white rounded">article</span>
+                        <div>
+                            <div class="font-medium text-gray-200">アーカイブ君 (Qiita)</div>
+                            <div class="text-xs mt-1">便利な機能を提供するBOTの解説記事</div>
+                        </div>
+                        <span class="material-icons ml-auto text-sm opacity-50">arrow_forward</span>
+                    </a>
+
+                    <a href="https://github.com/murahito130/Google-Calendar-to-Discord-Notifier" target="_blank"
+                        rel="noopener noreferrer" class="link-item">
+                        <span
+                            class="material-icons icon flex items-center justify-center bg-indigo-800 text-white rounded">event_available</span>
+                        <div>
+                            <div class="font-medium text-gray-200">Google Calendar to Discord Notifier</div>
+                            <div class="text-xs mt-1">スケジュールを自動でDiscordに通知ツール</div>
+                        </div>
+                        <span class="material-icons ml-auto text-sm opacity-50">arrow_forward</span>
+                    </a>
+
+                    <a href="https://greasyfork.org/ja/users/1542285-murahito" target="_blank" rel="noopener noreferrer"
+                        class="link-item">
+                        <span
+                            class="material-icons icon flex items-center justify-center bg-gray-700 text-white rounded">code</span>
+                        <div>
+                            <div class="font-medium text-gray-200">Greasy Fork Scripts</div>
+                            <div class="text-xs mt-1">ユーザースクリプトの公開ページ</div>
+                        </div>
+                        <span class="material-icons ml-auto text-sm opacity-50">arrow_forward</span>
+                    </a>
+
+                    <a href="https://addons.mozilla.org/ja/firefox/addon/youtube-volume-normalizer-mrht/"
+                        target="_blank" rel="noopener noreferrer" class="link-item">
+                        <span
+                            class="material-icons icon flex items-center justify-center bg-orange-600 text-white rounded">extension</span>
+                        <div>
+                            <div class="font-medium text-gray-200">YouTube Volume Normalizer</div>
+                            <div class="text-xs mt-1">Firefox アドオン</div>
+                        </div>
+                        <span class="material-icons ml-auto text-sm opacity-50">arrow_forward</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- ボトムナビゲーションの下に隠れないための余白 -->
+            <div class="lg:hidden h-2"></div>
+        </main>
+    </div>
+
+    <!-- モバイル用ボトムナビゲーション -->
+    <nav class="bottom-nav">
+        <a href="#about" class="bottom-nav-link active">
+            <span class="material-icons">person_outline</span>
+            <span>About</span>
         </a>
         <a href="#madamisu" class="bottom-nav-link">
-            <i class="material-icons">casino</i>
-            マダミス
+            <span class="material-icons">casino</span>
+            <span>シナリオ</span>
         </a>
         <a href="#schedule" class="bottom-nav-link">
-            <i class="material-icons">calendar_today</i>
-            スケジュール
+            <span class="material-icons">calendar_today</span>
+            <span>予定</span>
         </a>
         <a href="#sns" class="bottom-nav-link">
-            <i class="material-icons">share</i>
-            SNS
+            <span class="material-icons">share</span>
+            <span>リンク</span>
         </a>
         <a href="#bots" class="bottom-nav-link">
-            <i class="material-icons">android</i>
-            BOT
+            <span class="material-icons">smart_toy</span>
+            <span>制作物</span>
         </a>
-    </div>
-    <div class="container mx-auto px-4 md:px-0 mt-8">
-        <!-- 自己紹介セクション -->
-        <section id="introduction" class="section-card">
-            <h2 class="text-3xl font-bold mb-4 text-gray-100">自己紹介</h2>
-            <p class="text-lg mb-2">日々プログラムを書くSE♂。</p>
-            <p class="text-lg">最近は、マーダーミステリー・ストーリープレイング・TRPG・スプラトゥーンで主に遊んでいる。</p>
-        </section>
-        <!-- マダミス・ストプレ・TRPGセクション -->
-        <section id="madamisu" class="section-card">
-            <h2 class="text-3xl font-bold mb-4 text-gray-100">マダミス・ストプレ・TRPG</h2>
-            <h3 class="text-2xl font-semibold mb-4 text-gray-200">通過or通過予定のシナリオ</h3>
-            <button id="passed-scenario-toggle" class="cool-button mb-4">通過済み・予定シナリオを表示</button>
-            <iframe id="passed-scenario-iframe" class="responsive-iframe" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKeyDIJNmixBw3sXOHaNkdYRYRnQWJS7SYrGIa8JUgiFTi8Qw1f6zU-NWGJz17sjbNZu26bn6r6BNj/pubhtml?widget=true&amp;headers=false"></iframe>
-            <h3 class="text-2xl font-semibold mb-4 mt-8 text-gray-200">GM可能なシナリオ</h3>
-            <button id="gm-scenario-toggle" class="cool-button mb-4">GM可能なシナリオを表示</button>
-            <iframe id="gm-scenario-iframe" class="responsive-iframe" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTfwTKFVBioZ7ipaD6x8tT_ANSpvpDLQJ0QXBlI6tHyVNPikyOAG-3jg_nIcFAetYQAI0FIabX2E0Yl/pubhtml?widget=true&amp;headers=false"></iframe>
-        </section>
-        <!-- スケジュールセクション -->
-        <section id="schedule" class="section-card">
-            <h2 class="text-3xl font-bold mb-4 text-gray-100">スケジュール</h2>
-            <button id="schedule-toggle" class="cool-button mb-4">スケジュールを非表示</button>
-            <iframe id="schedule-iframe" class="responsive-iframe show" src="https://calendar.google.com/calendar/embed?wkst=1&ctz=Asia%2FTokyo&showPrint=0&showTitle=0&src=ZG9yaW4uYS5tb29uLjgxMkBnbWFpbC5jb20&src=NTI2NWU0ZWMwNTZlMGJkNWVkZGE3NTYzODllMjliNWUyOWNkYjk2MjU2Yzk3ZmIzMzQ3YjI2YmNiMmRjOWU2N0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=NDA4NTAwODVkNzk1MGY0ZjE3NGI0ZmE1ZjQwYmM1NjY5Y2RmY2NmNTcyZTI5NjZmMjBiZDNhYjg4OGMzYTk2ZkBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=Y2YwNDI1ZWUzNjZjZWZiMzI0MDlhM2UwYTIwMDY1NGRmMjA1MjgyNmQzNThjMDIxODllNDc1MThlNzE0MWQ5M0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=amEuamFwYW5lc2UjaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%234285F4&color=%23D81B60&color=%23EF6C00&color=%233F51B5&color=%23009688" style="border-width:0" frameborder="0" scrolling="no"></iframe>
-        </section>
-        <!-- SNS等セクション -->
-        <section id="sns" class="section-card">
-            <h2 class="text-3xl font-bold mb-4 text-gray-100">SNS等</h2>
-            <ul class="space-y-4">
-                <li>
-                    <a href="https://x.com/murahito130" class="flex items-center text-lg text-blue-400 hover:text-blue-200 transition-colors duration-300">
-                        <img class="sns-icon" src="https://about.x.com/content/dam/about-twitter/x/brand-toolkit/logo-black.png" alt="X" onerror="this.onerror=null;this.src='https://placehold.co/40x40/333333/e0e0e0?text=X';" />
-                        X (旧Twitter)
-                    </a>
-                </li>
-                <li>
-                    <a href="https://github.com/murahito130/murahito130.github.io" class="flex items-center text-lg text-blue-400 hover:text-blue-200 transition-colors duration-300">
-                        <img class="sns-icon" src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" alt="github" onerror="this.onerror=null;this.src='https://placehold.co/40x40/333333/e0e0e0?text=GH';" />
-                        github
-                    </a>
-                </li>
-                <li>
-                    <a href="https://lounge.nintendo.com/friendcode/0645-0135-9421/C7V6SDr8Vp" class="flex items-center text-lg text-blue-400 hover:text-blue-200 transition-colors duration-300">
-                        <img class="sns-icon" src="https://www.nintendo.com/jp/hardware/switch/img/10-mv/logo-with-shadow.png" alt="NSW" onerror="this.onerror=null;this.src='https://placehold.co/40x40/333333/e0e0e0?text=NSW';" />
-                        Nintendo Switch フレンドコード SW-0645-0135-9421
-                    </a>
-                </li>
-            </ul>
-        </section>
-        <!-- 公開しているBOTとかアプリとかセクション -->
-        <section id="bots" class="section-card">
-            <h2 class="text-3xl font-bold mb-4 text-gray-100">公開しているBOTとかアプリとか</h2>
-            <ul class="space-y-4">
-                <li><a href="https://qiita.com/murahito/items/127da46d03a510f98bca" class="text-lg text-blue-400 hover:text-blue-200 transition-colors duration-300">アーカイブ君</a></li>
-                <li><a href="https://github.com/murahito130/Google-Calendar-to-Discord-Notifier" class="text-lg text-blue-400 hover:text-blue-200 transition-colors duration-300">Google Calendar to Discord Notifier</a></li>
-            </ul>
-        </section>
-    </div>
+    </nav>
+
     <script>
-        // DOMContentLoadedイベントでスクリプトを実行
-        document.addEventListener('DOMContentLoaded', () => {
-            // ナビゲーションリンクのアクティブ状態を管理する関数
-            const setupNavLinks = (selector, activeClass) => {
-                const links = document.querySelectorAll(selector);
-                const navBar = document.querySelector('nav'); // トップナビゲーションバーの要素を取得
-
-                links.forEach(link => {
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault(); // デフォルトのアンカー動作を停止
-
-                        // 既存のアクティブクラスを削除
-                        links.forEach(l => l.classList.remove(activeClass));
-                        // クリックされたリンクにアクティブクラスを追加
-                        this.classList.add(activeClass);
-
-                        const targetId = this.getAttribute('href').substring(1); // ターゲットセクションのIDを取得
-                        const targetSection = document.getElementById(targetId);
-
-                        if (targetSection) {
-                            let offset = 0;
-                            // トップナビゲーションバーが表示されている場合のみオフセットを適用
-                            if (window.innerWidth >= 769 && navBar) {
-                                offset = navBar.offsetHeight;
-                            }
-
-                            // スクロール位置を計算
-                            const scrollPosition = targetSection.offsetTop - offset;
-
-                            window.scrollTo({
-                                top: scrollPosition,
-                                behavior: 'smooth'
-                            });
-                        }
-                    });
+        // PC用：マウスの動きに合わせてカードのハイライト位置を更新
+        if (window.innerWidth >= 1024) {
+            document.querySelectorAll('.glass-card').forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
                 });
-            };
-            // トップナビゲーションリンクのアクティブ状態を設定
-            setupNavLinks('.nav-link', 'active');
-            // ボトムナビゲーションリンクのアクティブ状態を設定
-            setupNavLinks('.bottom-nav-link', 'active');
-
-            // スクロール時にナビゲーションリンクのアクティブ状態を更新する関数
-            const updateNavLinkActiveState = () => {
-                const sections = document.querySelectorAll('section');
-                const navLinks = document.querySelectorAll('.nav-link, .bottom-nav-link');
-                const navBar = document.querySelector('nav');
-                // トップナビゲーションバーが表示されている場合のみ高さを取得、それ以外は0
-                const fixedHeaderHeight = (window.innerWidth >= 769 && navBar) ? navBar.offsetHeight : 0;
-
-                let currentActiveSectionId = '';
-
-                // セクションを逆順にループし、現在ビューポートの最上部にあるセクションを見つける
-                for (let i = sections.length - 1; i >= 0; i--) {
-                    const section = sections[i];
-                    const rect = section.getBoundingClientRect();
-                    // セクションのトップが固定ヘッダーのすぐ下またはそれより上（かつセクションのボトムが固定ヘッダーより下）の場合、そのセクションをアクティブとみなす
-                    if (rect.top <= fixedHeaderHeight && rect.bottom > fixedHeaderHeight) {
-                        currentActiveSectionId = section.id;
-                        break; // 最も上にある表示中のセクションが見つかったのでループを終了
-                    }
-                }
-
-                // もしどのセクションもアクティブにならなかった場合（例: ページの一番上など）、最初のセクションをデフォルトでアクティブにする
-                if (!currentActiveSectionId && sections.length > 0) {
-                    currentActiveSectionId = sections[0].id;
-                }
-
-                // ナビゲーションリンクのアクティブクラスを更新
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${currentActiveSectionId}`) {
-                        link.classList.add('active');
-                    }
-                });
-            };
-
-            // スクロールイベントリスナーを追加
-            window.addEventListener('scroll', updateNavLinkActiveState);
-            // ページロード時にも一度実行
-            updateNavLinkActiveState();
-
-            // スクロールアニメーション (セクションのフェードイン/スライドイン)
-            const sectionObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target); // 一度表示されたら監視を停止
-                    }
-                });
-            }, {
-                threshold: 0, // セクションが少しでも見えたら発火
-                rootMargin: '0px' // ビューポートの端を基準にする
             });
+        }
 
-            document.querySelectorAll('section').forEach(section => {
-                sectionObserver.observe(section);
-            });
+        // スクロールスパイ (ナビゲーションのアクティブ状態更新)
+        const sections = document.querySelectorAll('section');
+        const desktopNavLinks = document.querySelectorAll('.desktop-nav .nav-link');
+        const bottomNavLinks = document.querySelectorAll('.bottom-nav-link');
 
-            // iframeの表示/非表示を切り替える関数
-            const setupIframeToggle = (buttonId, iframeId) => {
-                const button = document.getElementById(buttonId);
-                const iframe = document.getElementById(iframeId);
-                if (button && iframe) {
-                    button.addEventListener('click', () => {
-                        iframe.classList.toggle('show');
-                        // ボタンのテキストを現在のiframeの表示状態に合わせて更新
-                        if (iframe.classList.contains('show')) {
-                            button.textContent = button.textContent.replace('表示', '非表示');
-                        } else {
-                            button.textContent = button.textContent.replace('非表示', '表示');
-                        }
-                    });
-                }
-            };
-            // 各iframeのトグルを設定
-            setupIframeToggle('passed-scenario-toggle', 'passed-scenario-iframe');
-            setupIframeToggle('gm-scenario-toggle', 'gm-scenario-iframe');
-            setupIframeToggle('schedule-toggle', 'schedule-iframe');
-                        
-            // ページロード時に、初期表示されているiframeのボタンテキストを更新
-            document.querySelectorAll('.responsive-iframe.show').forEach(iframe => {
-                if (iframe.id === 'schedule-iframe') { // スケジュールiframeの場合のみ
-                    const button = document.getElementById('schedule-toggle');
-                    if (button) {
-                        button.textContent = 'スケジュールを非表示';
-                    }
+        const updateActiveNav = () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                // 黄金比にちなんで画面の61.8%あたりを判定基準に
+                if (scrollY >= (sectionTop - window.innerHeight * 0.382)) {
+                    current = section.getAttribute('id');
                 }
             });
 
-            // 波紋エフェクトの追加
-            const addRippleEffect = (element) => {
-                element.addEventListener('click', function(e) {
-                    const ripple = document.createElement('span');
-                    ripple.classList.add('ripple');
-                    // クリック位置に基づいて波紋の中心を設定
-                    const rect = this.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = e.clientX - rect.left - (size / 2);
-                    const y = e.clientY - rect.top - (size / 2);
-                    ripple.style.width = ripple.style.height = `${size}px`;
-                    ripple.style.left = `${x}px`;
-                    ripple.style.top = `${y}px`;
-                    this.appendChild(ripple);
-                    // アニメーション終了後に波紋要素を削除
-                    ripple.addEventListener('animationend', () => {
-                        ripple.remove();
-                    });
-                });
-            };
-            // ナビゲーションリンクとボタンに波紋エフェクトを適用
-            document.querySelectorAll('.nav-link, .bottom-nav-link, .cool-button').forEach(el => {
-                addRippleEffect(el);
+            // デスクトップナビ
+            desktopNavLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
             });
+
+            // ボトムナビ
+            bottomNavLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        };
+        window.addEventListener('scroll', updateActiveNav, { passive: true });
+
+        // スムーズスクロール
+        const smoothScroll = (e) => {
+            e.preventDefault();
+            const link = e.currentTarget;
+            const targetId = document.querySelector(link.getAttribute('href'));
+            // ボトムナビゲーションの高さ等を考慮したオフセット
+            const offset = window.innerWidth < 1024 ? 20 : 50;
+            window.scrollTo({
+                top: targetId.offsetTop - offset,
+                behavior: 'smooth'
+            });
+        };
+
+        desktopNavLinks.forEach(link => link.addEventListener('click', smoothScroll));
+        bottomNavLinks.forEach(link => link.addEventListener('click', smoothScroll));
+
+        // Intersection Observer (フェードインアニメーション)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    // 一度表示したら監視を解除
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-section').forEach(section => {
+            observer.observe(section);
         });
+
+        // iframe トグル処理
+        const setupToggle = (btnId, iframeId) => {
+            const btn = document.getElementById(btnId);
+            const iframe = document.getElementById(iframeId);
+            if (!btn || !iframe) return;
+
+            const textSpan = btn.querySelector('span:last-child');
+            const iconBtn = btn.querySelector('.material-icons');
+
+            btn.addEventListener('click', () => {
+                const isShowing = iframe.classList.toggle('show');
+                if (isShowing) {
+                    textSpan.textContent = textSpan.textContent.replace('表示', '非表示');
+                    iconBtn.textContent = 'visibility_off';
+                } else {
+                    textSpan.textContent = textSpan.textContent.replace('非表示', '表示');
+                    iconBtn.textContent = 'visibility';
+                }
+            });
+        };
+
+        setupToggle('btn-passed', 'iframe-passed');
+        setupToggle('btn-gm', 'iframe-gm');
+
+        // スケジュールは初期表示されているので対応
+        const btnSchedule = document.getElementById('btn-schedule');
+        if (btnSchedule) {
+            btnSchedule.addEventListener('click', () => {
+                const iframe = document.getElementById('iframe-schedule');
+                const textSpan = btnSchedule.querySelector('span:last-child');
+                const iconBtn = btnSchedule.querySelector('.material-icons');
+
+                const isShowing = iframe.classList.toggle('show');
+                if (isShowing) {
+                    textSpan.textContent = 'カレンダーを非表示';
+                    iconBtn.textContent = 'visibility_off';
+                    // schedule特有のクラスを復元
+                    if (window.innerWidth >= 1024) iframe.classList.add('show-schedule');
+                } else {
+                    textSpan.textContent = 'カレンダーを表示';
+                    iconBtn.textContent = 'visibility';
+                    iframe.classList.remove('show-schedule');
+                }
+            });
+        }
+
+        // 初回実行
+        updateActiveNav();
     </script>
 </body>
+
 </html>
